@@ -524,6 +524,12 @@ class RHN(NodeConfigFileSection):
                                         "activation key requires an organization "
                                         "to be set")])
                         return tx
+                    if cfg["environment"]:
+                        del tx[0]
+                        tx.extend([RaiseError("Registration to Satellite 6 with "
+                                        "activation key do not allow environments "
+                                        "to be specified")])
+                        return tx
                     if cfg["username"] or password:
                         del tx[0]
                         tx.extend([RaiseError("Registration to Satellite 6 with an "
