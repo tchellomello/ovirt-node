@@ -45,12 +45,13 @@ class RHN(NodeConfigFileSection):
             "OVIRT_RHN_PROFILE",
             "OVIRT_RHN_ACTIVATIONKEY",
             "OVIRT_RHN_ORG",
+            "OVIRT_RHN_ENVIRONMENT",
             "OVIRT_RHN_PROXY",
             "OVIRT_RHN_PROXYUSER")
 
     @NodeConfigFileSection.map_and_update_defaults_decorator
     def update(self, rhntype, url, ca_cert, username, profile,
-               activationkey, org, proxy, proxyuser):
+               activationkey, org, environment, proxy, proxyuser):
         pass
 
     def retrieve(self):
@@ -428,6 +429,7 @@ class RHN(NodeConfigFileSection):
 
                 mapping = {"--activationkey": cfg["activationkey"],
                            "--org":           cfg["org"],
+                           "--environment":   cfg["environment"],
                            "--username":      cfg["username"],
                            "--password":      password,
                            "--name":          cfg["profile"],
@@ -516,11 +518,18 @@ class RHN(NodeConfigFileSection):
         if rhntype == "sam" or \
            (rhntype == "satellite" and DEFAULT_CA_SAT6 in cfg["ca_cert"]) or \
            (system.is_min_el(7) and rhntype == "rhn"):
-            if rhntype == "satellite" and not cfg["org"]:
-                del tx[0]
-                tx.extend([RaiseError("Registration to Satellite 6 requires "
+            if rhntype == "satellite":
+                if cfg["org"] and not cfg["environment"]:
+                    del tx[0]
+                    tx.extend([RaiseError("Registration to Satellite 6 requires "
+                                      "an organization and environment to be set")])
+                    return tx
+
+                if not cfg["org"]:
+                    del tx[0]
+                    tx.extend([RaiseError("Registration to Satellite 6 requires "
                                       "an organization to be set")])
-                return tx
+                    return tx
 
             if cfg["proxy"]:
                 tx.append(ConfigureSAMProxy())
