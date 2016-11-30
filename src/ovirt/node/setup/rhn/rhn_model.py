@@ -30,6 +30,8 @@ import requests
 import urlparse
 
 
+DEFAULT_CA_SAT6 = 'katello-server-ca.crt'
+
 class RHN(NodeConfigFileSection):
     """Configure RHN
 
@@ -335,7 +337,7 @@ class RHN(NodeConfigFileSection):
                     host, port, prefix = RHN().parse_host_uri(cfg["url"])
 
                     # Default to /rhsm for Satellite 6
-                    if cfg["ca_cert"].endswith(".pem") and \
+                    if DEFAULT_CA_SAT6 in cfg["ca_cert"] and \
                        cfg["rhntype"] == "satellite":
                         prefix = "/rhsm"
 
@@ -353,7 +355,7 @@ class RHN(NodeConfigFileSection):
 
                 # Figure out what other arguments need to be set
                 # If there's a ca certificate or it's satellite, it's sat6
-                if cfg["ca_cert"] and not cfg["ca_cert"].endswith(".pem") or \
+                if cfg["ca_cert"] and DEFAULT_CA_SAT6 in cfg["ca_cert"] and \
                    cfg["rhntype"] == "satellite":
                     mapping["--server.prefix"] = prefix
                 else:
@@ -511,7 +513,8 @@ class RHN(NodeConfigFileSection):
         tx = utils.Transaction("Performing entitlement registration")
         tx.append(RemoveConfigs())
 
-        if rhntype == "sam" or cacert.endswith(".pem") or \
+        if rhntype == "sam" or \
+           (rhntype == "satellite" and DEFAULT_CA_SAT6 in cfg["ca_cert"]) or \
            (system.is_min_el(7) and rhntype == "rhn"):
             if rhntype == "satellite" and not cfg["org"]:
                 del tx[0]
