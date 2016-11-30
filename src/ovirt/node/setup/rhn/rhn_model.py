@@ -449,9 +449,8 @@ class RHN(NodeConfigFileSection):
                                                       "/password combination",
                                "already been taken":  "This hostname is "
                                                       "already registered",
-                               "Organization":        "Organization must be "
-                                                      "specified with "
-                                                      "Satellite 6"}
+                               "Organization":        "Organization not found "
+                                                      "on Satellite 6"}
                     for k, v in mapping.items():
                         if k in smreg_output:
                             raise RuntimeError(v)
@@ -518,17 +517,30 @@ class RHN(NodeConfigFileSection):
            (rhntype == "satellite" and DEFAULT_CA_SAT6 in cfg["ca_cert"]) or \
            (system.is_min_el(7) and rhntype == "rhn"):
             if rhntype == "satellite":
-                if cfg["org"] and not cfg["environment"]:
-                    del tx[0]
-                    tx.extend([RaiseError("Registration to Satellite 6 requires "
+                if cfg["activationkey"]:
+                    if not cfg["org"]:
+                        del tx[0]
+                        tx.extend([RaiseError("Registration to Satellite 6 with "
+                                        "activation key requires an organization "
+                                        "to be set")])
+                        return tx
+                    if cfg["username"] or password:
+                        del tx[0]
+                        tx.extend([RaiseError("Registration to Satellite 6 with an "
+                                        "activation key do not require credentials")])
+                        return tx
+                else:
+                    if not cfg["org"] or not cfg["environment"]:
+                        del tx[0]
+                        tx.extend([RaiseError("Registration to Satellite 6 requires "
                                       "an organization and environment to be set")])
-                    return tx
+                        return tx
 
-                if not cfg["org"]:
-                    del tx[0]
-                    tx.extend([RaiseError("Registration to Satellite 6 requires "
-                                      "an organization to be set")])
-                    return tx
+                    if not cfg["username"] or not password:
+                        del tx[0]
+                        tx.extend([RaiseError("Registration to Satellite 6 without an "
+                                        "activation key requires user credentials")])
+                        return tx
 
             if cfg["proxy"]:
                 tx.append(ConfigureSAMProxy())
