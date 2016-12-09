@@ -29,7 +29,7 @@ import glob
 import requests
 import urlparse
 
-DEFAULT_CA_SAT6 = 'katello-server-ca.crt'
+DEFAULT_CA_SAT6 = 'katello-server-ca'
 
 class RHN(NodeConfigFileSection):
     """Configure RHN
