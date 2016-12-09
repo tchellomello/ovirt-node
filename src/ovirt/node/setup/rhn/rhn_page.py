@@ -55,7 +55,7 @@ class Plugin(plugins.NodePlugin):
                  "rhn.url": cfg["url"],
                  "rhn.ca": cfg["ca_cert"],
                  "rhn.org": cfg["org"],
-                 "rhn.environment" : cfg["environment"],
+                 "rhn.environment": cfg["environment"],
                  "rhn.activation_key": cfg["activationkey"],
                  "rhn.proxyuser": cfg["proxyuser"],
                  "rhn.proxyhost": "",
